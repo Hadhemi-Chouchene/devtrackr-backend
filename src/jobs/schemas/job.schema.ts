@@ -16,11 +16,11 @@ export class Job {
 
   @Prop()
   location: string;
-  
+
   @Prop()
   status: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  userId: Types.ObjectId(user); // Reference to the User who created the job
+  userId: Types.ObjectId; // Reference to the User who created the job
 }
 export const JobSchema = SchemaFactory.createForClass(Job);
