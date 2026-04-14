@@ -26,5 +26,5 @@ export class CreateJobDTO {
 
   @IsOptional()
   @IsEnum(JobStatus)
-  status?: 'applied' | 'interview' | 'rejected' | 'accepted';
+  status?: JobStatus;
 }
