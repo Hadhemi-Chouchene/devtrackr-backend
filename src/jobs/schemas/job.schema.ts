@@ -12,12 +12,16 @@ export class Job {
   company: string;
 
   @Prop()
-  description: string;
+  description?: string;
 
   @Prop()
-  location: string;
+  location?: string;
 
-  @Prop()
+  @Prop({
+    type: String,
+    enum: ['applied', 'interview', 'rejected', 'accepted'],
+    default: 'applied',
+  })
   status: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
