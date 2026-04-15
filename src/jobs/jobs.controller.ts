@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  UseGuards,
-  Request,
-  Post,
-  Body,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards, Post, Body } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -30,12 +23,14 @@ export class JobsController {
     };
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Get()
-  // getJobs(@CurrentUser() user) {
-  //   return {
-  //     message: 'Jobs fetched successfully',
-  //     user,
-  //   };
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async getJobs(@CurrentUser() user: { userId: string }) {
+    const jobs = await this.jobsService.findAllByUser(user.userId);
+
+    return {
+      message: 'Jobs fetched successfully',
+      jobs,
+    };
+  }
 }

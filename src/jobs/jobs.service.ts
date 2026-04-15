@@ -31,4 +31,9 @@ export class JobsService {
     // Save job to MongoDB and return the saved document
     return newJob.save();
   }
+
+  async findAllByUser(userId: string) {
+    // Fetch all jobs created by the specified user, sorted by creation date (newest first)
+    return this.jobModel.find({ userId }).sort({ createdAt: -1 }).exec();
+  }
 }
