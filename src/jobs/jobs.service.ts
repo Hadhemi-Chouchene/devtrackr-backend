@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { CreateJobDTO } from './dto/create-job.dto';
 import { Job, JobDocument } from './schemas/job.schema';
@@ -37,5 +37,42 @@ export class JobsService {
   async findAllByUser(userId: string) {
     // Fetch all jobs created by the specified user, sorted by creation date (newest first)
     return this.jobModel.find({ userId }).sort({ createdAt: -1 }).exec();
+  }
+
+  // Update a job only if it belongs to the authenticated user
+  async editJob(
+    jobId: string,
+    updateData: Partial<CreateJobDTO>,
+    userId: string,
+  ) {
+    // Find the job by ID and ensure it belongs to the authenticated user
+    const job = await this.jobModel.findByIdAndUpdate(
+      { _id: jobId, userId },
+      updateData,
+      { new: true },
+    );
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    // Apply updates to existing document
+    Object.assign(job, updateData);
+    return job.save();
+  }
+
+  // Delete a job only if it belongs to the authenticated user
+  async deleteJob(jobId: string, userId: string) {
+    const job = await this.jobModel.findByIdAndDelete(
+      { _id: jobId, userId },
+      { new: true },
+    );
+
+    // Prevent deleting jobs that don't belong to user
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    // Remove the job from the database
+    return job.deleteOne();
   }
 }
