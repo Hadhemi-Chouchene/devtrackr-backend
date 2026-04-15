@@ -1,7 +1,15 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  UseGuards,
+  Request,
+  Post,
+  Body,
+} from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { CreateJobDTO } from './dto/create-job.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -9,14 +17,25 @@ export class JobsController {
 
   // Protect this route: only users with valid JWT can access
   @UseGuards(JwtAuthGuard)
-  @Get()
-  getJobs(@CurrentUser() user) {
-    // The user object comes from JwtStrategy.validate()
-    // It is automatically attached to the request by NestJS after token verification
+  @Post()
+  async createJob(
+    @CurrentUser() user: { userId: string },
+    @Body() createJobDTO: CreateJobDTO,
+  ) {
+    const job = await this.jobsService.create(createJobDTO, user.userId);
 
     return {
-      message: 'Jobs fetched successfully',
-      user,
+      message: 'Job created successfully',
+      job,
     };
   }
+
+  // @UseGuards(JwtAuthGuard)
+  // @Get()
+  // getJobs(@CurrentUser() user) {
+  //   return {
+  //     message: 'Jobs fetched successfully',
+  //     user,
+  //   };
+  // }
 }
