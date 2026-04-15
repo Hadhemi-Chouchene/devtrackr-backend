@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { CreateJobDTO } from './dto/create-job.dto';
-import { JobDocument } from './schemas/job.schema';
+import { Job, JobDocument } from './schemas/job.schema';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class JobsService {
   constructor(
     // Inject the Mongoose model for Job schema
+    @InjectModel(Job.name)
     private jobModel: Model<JobDocument>,
   ) {}
 
