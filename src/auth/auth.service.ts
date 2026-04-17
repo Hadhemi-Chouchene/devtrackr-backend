@@ -39,7 +39,10 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
     // Generate JWT
-    const payload = { sub: user._id.toString(), email: user.email };
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+    };
     const token = this.jwtService.sign(payload);
     return { access_token: token };
   }
