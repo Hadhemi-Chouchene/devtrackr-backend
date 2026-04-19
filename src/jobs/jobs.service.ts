@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Job, JobDocument } from './schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 
 @Injectable()
 export class JobsService {
@@ -35,9 +36,39 @@ export class JobsService {
     return newJob.save();
   }
 
-  async findAllByUser(userId: string) {
-    // Fetch all jobs created by the specified user, sorted by creation date (newest first)
-    return this.jobModel.find({ userId }).sort({ createdAt: -1 }).exec();
+  async findAllByUser(userId: string, query: GetJobsQueryDto) {
+    // Destructure query parameters with default values
+    const { page = '1', limit = '10', status } = query;
+    // Convert page and limit to numbers for pagination
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    // Calculate how many documents to skip based on current page and limit
+    const skip = (pageNumber - 1) * limitNumber;
+
+    // Build a query filter to find jobs that belong to the authenticated user
+    const filter: FilterQuery<JobDocument> = { userId };
+
+    // If a status filter is provided, add it to the query filter
+    if (status) {
+      filter.status = status;
+    }
+
+    // Query the database for jobs that belong to the authenticated user, applying pagination and optional status filtering
+    const jobs = await this.jobModel
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber);
+
+    const total = await this.jobModel.countDocuments(filter);
+
+    return {
+      total,
+      page: pageNumber,
+      limit: limitNumber,
+      jobs,
+    };
   }
 
   // Update a job only if it belongs to the authenticated user

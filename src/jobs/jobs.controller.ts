@@ -41,7 +41,7 @@ export class JobsController {
     @CurrentUser() user: { userId: string },
     @Query() query: GetJobsQueryDto,
   ) {
-    const jobs = await this.jobsService.findAllByUser(user.userId);
+    const jobs = await this.jobsService.findAllByUser(user.userId, query);
 
     return {
       message: 'Jobs fetched successfully',
