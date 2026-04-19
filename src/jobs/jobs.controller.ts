@@ -7,12 +7,14 @@ import {
   Put,
   Delete,
   Param,
+  Query,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
+import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -35,7 +37,10 @@ export class JobsController {
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async getJobs(@CurrentUser() user: { userId: string }) {
+  async getJobs(
+    @CurrentUser() user: { userId: string },
+    @Query() query: GetJobsQueryDto,
+  ) {
     const jobs = await this.jobsService.findAllByUser(user.userId);
 
     return {
