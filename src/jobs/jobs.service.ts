@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { CreateJobDTO } from './dto/create-job.dto';
+import { CreateJobDto } from './dto/create-job.dto';
 import { Job, JobDocument } from './schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
 
@@ -12,9 +12,9 @@ export class JobsService {
     private jobModel: Model<JobDocument>,
   ) {}
 
-  async create(createJobDTO: CreateJobDTO, userId: string) {
+  async create(createJobDto: CreateJobDto, userId: string) {
     // Destructure incoming DTO (validated input from controller)
-    const { title, company, description, location, status } = createJobDTO;
+    const { title, company, description, location, status } = createJobDto;
 
     // Create a new job document and attach the authenticated user's ID
     const newJob = new this.jobModel({
@@ -42,7 +42,7 @@ export class JobsService {
   // Update a job only if it belongs to the authenticated user
   async editJob(
     jobId: string,
-    updateData: Partial<CreateJobDTO>,
+    updateData: Partial<CreateJobDto>,
     userId: string,
   ) {
     // Find the job by ID and ensure it belongs to the authenticated user

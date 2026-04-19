@@ -11,7 +11,7 @@ import {
 import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { CreateJobDTO } from './dto/create-job.dto';
+import { CreateJobDto } from './dto/create-job.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -22,9 +22,9 @@ export class JobsController {
   @Post()
   async createJob(
     @CurrentUser() user: { userId: string },
-    @Body() createJobDTO: CreateJobDTO,
+    @Body() createJobDto: CreateJobDto,
   ) {
-    const job = await this.jobsService.create(createJobDTO, user.userId);
+    const job = await this.jobsService.create(createJobDto, user.userId);
 
     return {
       message: 'Job created successfully',
@@ -48,7 +48,7 @@ export class JobsController {
   async editJob(
     @CurrentUser() user: { userId: string },
     @Param('id') jobId: string,
-    @Body() updateData: Partial<CreateJobDTO>,
+    @Body() updateData: Partial<CreateJobDto>,
   ) {
     const { ...updateFields } = updateData;
     const updatedJob = await this.jobsService.editJob(

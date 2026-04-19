@@ -7,7 +7,7 @@ export enum JobStatus {
   ACCEPTED = 'accepted',
 }
 
-export class CreateJobDTO {
+export class CreateJobDto {
   @IsString()
   @IsNotEmpty()
   title: string;
