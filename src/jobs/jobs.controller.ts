@@ -51,10 +51,9 @@ export class JobsController {
     @Param('id') jobId: string,
     @Body() updateData: UpdateJobDto,
   ) {
-    const { ...updateFields } = updateData;
     const updatedJob = await this.jobsService.editJob(
       jobId,
-      updateFields,
+      updateData,
       user.userId,
     );
 

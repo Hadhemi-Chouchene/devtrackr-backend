@@ -43,7 +43,7 @@ export class JobsService {
   // Update a job only if it belongs to the authenticated user
   async editJob(jobId: string, updateData: UpdateJobDto, userId: string) {
     // Find the job by ID and ensure it belongs to the authenticated user
-    const job = await this.jobModel.findByIdAndUpdate(
+    const job = await this.jobModel.findOneAndUpdate(
       { _id: jobId, userId },
       updateData,
       { new: true },
@@ -52,24 +52,21 @@ export class JobsService {
       throw new NotFoundException('Job not found');
     }
 
-    // Apply updates to existing document
-    Object.assign(job, updateData);
-    return job.save();
+    // Update the job with the provided data and return the updated document
+    return job;
   }
 
   // Delete a job only if it belongs to the authenticated user
   async deleteJob(jobId: string, userId: string) {
-    const job = await this.jobModel.findByIdAndDelete(
-      { _id: jobId, userId },
-      { new: true },
-    );
+    const job = await this.jobModel.findOneAndDelete({
+      _id: jobId,
+      userId,
+    });
 
     // Prevent deleting jobs that don't belong to user
     if (!job) {
       throw new NotFoundException('Job not found');
     }
-
-    // Remove the job from the database
-    return job.deleteOne();
+    return job;
   }
 }
