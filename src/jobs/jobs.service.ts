@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Job, JobDocument } from './schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Injectable()
 export class JobsService {
@@ -40,11 +41,7 @@ export class JobsService {
   }
 
   // Update a job only if it belongs to the authenticated user
-  async editJob(
-    jobId: string,
-    updateData: Partial<CreateJobDto>,
-    userId: string,
-  ) {
+  async editJob(jobId: string, updateData: UpdateJobDto, userId: string) {
     // Find the job by ID and ensure it belongs to the authenticated user
     const job = await this.jobModel.findByIdAndUpdate(
       { _id: jobId, userId },

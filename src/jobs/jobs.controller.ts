@@ -12,6 +12,7 @@ import { JobsService } from './jobs.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateJobDto } from './dto/create-job.dto';
+import { UpdateJobDto } from './dto/update-job.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -48,7 +49,7 @@ export class JobsController {
   async editJob(
     @CurrentUser() user: { userId: string },
     @Param('id') jobId: string,
-    @Body() updateData: Partial<CreateJobDto>,
+    @Body() updateData: UpdateJobDto,
   ) {
     const { ...updateFields } = updateData;
     const updatedJob = await this.jobsService.editJob(
