@@ -5,6 +5,7 @@ import { Job, JobDocument } from './schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
+import { SortOrder } from './dto/get-jobs-query.dto';
 
 @Injectable()
 export class JobsService {
@@ -38,7 +39,7 @@ export class JobsService {
 
   async findAllByUser(userId: string, query: GetJobsQueryDto) {
     // Destructure query parameters with default values
-    const { page = '1', limit = '10', status } = query;
+    const { page = '1', limit = '10', status, search, sort } = query;
 
     // Convert page and limit to numbers and ensure they are positive integers
     const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
@@ -57,10 +58,20 @@ export class JobsService {
       filter.status = status;
     }
 
+    // If a search term is provided, add a case-insensitive regex filter for title and company fields
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { company: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const sortOption = sort === SortOrder.ASC ? 1 : -1; // Default to descending if not specified
+
     // Query the database for jobs that belong to the authenticated user, applying pagination and optional status filtering
     const jobs = await this.jobModel
       .find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: sortOption })
       .skip(skip)
       .limit(limitNumber)
       .exec();
@@ -69,11 +80,14 @@ export class JobsService {
     const total = await this.jobModel.countDocuments(filter);
     // Calculate total pages based on total count and limit per page
     const totalPages = Math.ceil(total / limitNumber);
+    // Determine if there is a next page based on current page number and total pages
+    const hasNextPage = pageNumber < totalPages;
     return {
       total,
       page: pageNumber,
       limit: limitNumber,
       totalPages,
+      hasNextPage,
       jobs,
     };
   }
