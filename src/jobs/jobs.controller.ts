@@ -45,7 +45,7 @@ export class JobsController {
 
     return {
       message: 'Jobs fetched successfully',
-      jobs,
+      data: jobs,
     };
   }
 

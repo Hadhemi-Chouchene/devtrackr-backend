@@ -39,9 +39,12 @@ export class JobsService {
   async findAllByUser(userId: string, query: GetJobsQueryDto) {
     // Destructure query parameters with default values
     const { page = '1', limit = '10', status } = query;
-    // Convert page and limit to numbers for pagination
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
+
+    // Convert page and limit to numbers and ensure they are positive integers
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+
+    // Limit the maximum number of items per page to prevent abuse (e.g., limit to 50)
+    const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
 
     // Calculate how many documents to skip based on current page and limit
     const skip = (pageNumber - 1) * limitNumber;
@@ -59,14 +62,18 @@ export class JobsService {
       .find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .exec();
 
+    // Get the total count of jobs that match the filter (for pagination metadata)
     const total = await this.jobModel.countDocuments(filter);
-
+    // Calculate total pages based on total count and limit per page
+    const totalPages = Math.ceil(total / limitNumber);
     return {
       total,
       page: pageNumber,
       limit: limitNumber,
+      totalPages,
       jobs,
     };
   }
