@@ -1,6 +1,10 @@
-import { IsOptional, IsNumberString, IsEnum } from 'class-validator';
+import { IsOptional, IsNumberString, IsEnum, IsString } from 'class-validator';
 import { JobStatus } from '../enums/job-status.enum';
 
+export enum SrtOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 export class GetJobsQueryDto {
   @IsOptional()
   @IsNumberString()
@@ -13,4 +17,12 @@ export class GetJobsQueryDto {
   @IsOptional()
   @IsEnum(JobStatus)
   status?: JobStatus;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortBy?: SortOrder;
 }
