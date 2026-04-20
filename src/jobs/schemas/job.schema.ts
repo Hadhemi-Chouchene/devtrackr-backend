@@ -6,10 +6,10 @@ export type JobDocument = Job & Document;
 @Schema({ timestamps: true })
 export class Job {
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  company: string;
+  company!: string;
 
   @Prop()
   description?: string;
@@ -22,9 +22,14 @@ export class Job {
     enum: ['applied', 'interview', 'rejected', 'accepted'],
     default: 'applied',
   })
-  status: string;
+  status!: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  userId: Types.ObjectId; // Reference to the User who created the job
+  userId!: Types.ObjectId; // Reference to the User who created the job
 }
 export const JobSchema = SchemaFactory.createForClass(Job);
+
+JobSchema.index({
+  title: 'text',
+  company: 'text',
+});
