@@ -3,12 +3,15 @@ import {
   Catch,
   ArgumentsHost,
   HttpException,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthenticatedUser } from 'src/auth/types/authenticated-user.interface';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -24,7 +27,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-
       const res = exception.getResponse() as
         | string
         | { message?: string | string[]; error?: string };
@@ -34,23 +36,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       } else if (typeof res === 'object' && res !== null) {
         if (Array.isArray(res.message)) {
           message = res.message.join(', ');
-        } else if (res.message) {
-          message = res.message;
+        } else {
+          message = res.message || message;
         }
       }
 
       error = exception.name.replace('Exception', '');
     }
 
-    console.error({
-      method,
-      url,
-      userId,
-      statusCode: status,
-      error,
-      message,
-      timestamp: new Date().toISOString(),
-    });
+    this.logger.error(
+      `${method} ${url} ${status} - user: ${userId} - message: ${message}`,
+    );
 
     response.status(status).json({
       success: false,
