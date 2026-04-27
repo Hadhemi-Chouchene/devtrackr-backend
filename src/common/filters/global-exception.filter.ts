@@ -4,13 +4,19 @@ import {
   ArgumentsHost,
   HttpException,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
+import { AuthenticatedUser } from 'src/auth/types/authenticated-user.interface';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
+
+    const method = request.method;
+    const url = request.url;
+    const userId = (request.user as AuthenticatedUser)?.userId || 'Anonymous';
 
     let status = 500;
     let message = 'Internal server error';
@@ -35,6 +41,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       error = exception.name.replace('Exception', '');
     }
+
+    console.error({
+      method,
+      url,
+      userId,
+      statusCode: status,
+      error,
+      message,
+      timestamp: new Date().toISOString(),
+    });
 
     response.status(status).json({
       success: false,
