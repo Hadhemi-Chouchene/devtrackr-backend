@@ -71,6 +71,7 @@ export class JobsService {
     // Query the database for jobs that belong to the authenticated user, applying pagination and optional status filtering
     const jobs = await this.jobModel
       .find(filter)
+      .select('-__v') // Exclude the __v field from results
       .sort({ createdAt: sortOption })
       .skip(skip)
       .limit(limitNumber)
