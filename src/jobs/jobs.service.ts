@@ -74,6 +74,7 @@ export class JobsService {
       .sort({ createdAt: sortOption })
       .skip(skip)
       .limit(limitNumber)
+      .lean()
       .exec();
 
     // Get the total count of jobs that match the filter (for pagination metadata)
