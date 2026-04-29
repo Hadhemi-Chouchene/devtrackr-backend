@@ -84,12 +84,15 @@ export class JobsService {
     const totalPages = Math.ceil(total / limitNumber);
     // Determine if there is a next page based on current page number and total pages
     const hasNextPage = pageNumber < totalPages;
+    // Determine if there is a previous page based on current page number
+    const hasPreviousPage = pageNumber > 1;
     return {
       total,
       page: pageNumber,
       limit: limitNumber,
       totalPages,
       hasNextPage,
+      hasPreviousPage,
       jobs,
     };
   }
