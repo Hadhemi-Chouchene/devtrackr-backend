@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { JobStatus } from '../enums/job-status.enum';
 
 export type JobDocument = Job & Document;
 
@@ -29,7 +30,6 @@ export class Job {
 }
 export const JobSchema = SchemaFactory.createForClass(Job);
 
-JobSchema.index({
-  title: 'text',
-  company: 'text',
-});
+JobSchema.index({ userId: 1, createdAt: 1 }); // pagination + sorting
+JobSchema.index({ status: 1 }); // filtering by status
+JobSchema.index({ title: 'text', company: 'text' }); // search
