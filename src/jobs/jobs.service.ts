@@ -6,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 import { SortOrder } from './dto/get-jobs-query.dto';
+import { JobStatus } from './enums/job-status.enum';
 
 @Injectable()
 export class JobsService {
@@ -27,7 +28,7 @@ export class JobsService {
       location,
 
       // If status is not provided, default to "applied"
-      status: status || 'applied',
+      status: status || JobStatus.APPLIED,
 
       // Link job to the user who created it (from JWT)
       userId,

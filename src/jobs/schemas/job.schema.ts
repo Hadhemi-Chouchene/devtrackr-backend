@@ -20,10 +20,10 @@ export class Job {
 
   @Prop({
     type: String,
-    enum: ['applied', 'interview', 'rejected', 'accepted'],
-    default: 'applied',
+    enum: JobStatus,
+    default: JobStatus.APPLIED,
   })
-  status!: string;
+  status!: JobStatus;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId!: Types.ObjectId; // Reference to the User who created the job
