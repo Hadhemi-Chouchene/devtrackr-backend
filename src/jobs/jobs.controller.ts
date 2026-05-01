@@ -15,16 +15,19 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
-
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import type { AuthenticatedUser } from 'src/auth/types/authenticated-user.interface';
+@UseGuards(JwtAuthGuard) // Apply JWT guard globally to all routes
 @Controller('jobs')
 export class JobsController {
   constructor(private jobsService: JobsService) {}
 
-  // Protect this route: only users with valid JWT can access
-  @UseGuards(JwtAuthGuard)
+  // Users can create their own jobs
   @Post()
   async createJob(
-    @CurrentUser() user: { userId: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Body() createJobDto: CreateJobDto,
   ) {
     const job = await this.jobsService.create(createJobDto, user.userId);
@@ -35,10 +38,10 @@ export class JobsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Users get ONLY their own jobs
   @Get()
   async getJobs(
-    @CurrentUser() user: { userId: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Query() query: GetJobsQueryDto,
   ) {
     const jobs = await this.jobsService.findAllByUser(user.userId, query);
@@ -49,10 +52,10 @@ export class JobsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Users can update ONLY their own jobs (already protected in service)
   @Put(':id')
   async editJob(
-    @CurrentUser() user: { userId: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') jobId: string,
     @Body() updateData: UpdateJobDto,
   ) {
@@ -68,16 +71,29 @@ export class JobsController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
+  // Users can delete ONLY their own jobs
   @Delete(':id')
   async deleteJob(
-    @CurrentUser() user: { userId: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') jobId: string,
   ) {
     await this.jobsService.deleteJob(jobId, user.userId);
 
     return {
       message: 'Job deleted successfully',
+    };
+  }
+
+  // ADMIN-ONLY: Get ALL jobs (global access)
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('admin/all')
+  async getAllJobsForAdmin(@Query() query: GetJobsQueryDto) {
+    const jobs = await this.jobsService.findAll(query);
+
+    return {
+      message: 'All jobs fetched (admin)',
+      jobs,
     };
   }
 }

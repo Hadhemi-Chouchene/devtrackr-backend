@@ -127,4 +127,33 @@ export class JobsService {
     }
     return job;
   }
+
+  async findAll(query: GetJobsQueryDto) {
+    const { page = '1', limit = '10' } = query;
+
+    const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const jobs = await this.jobModel
+      .find()
+      .select('-__v')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNumber)
+      .lean()
+      .exec();
+
+    const total = await this.jobModel.countDocuments();
+    const totalPages = Math.ceil(total / limitNumber);
+
+    return {
+      total,
+      page: pageNumber,
+      limit: limitNumber,
+      totalPages,
+      jobs,
+    };
+  }
 }
