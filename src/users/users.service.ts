@@ -11,9 +11,15 @@ export class UsersService {
     const createdUser = new this.userModel({ email, password: hashedPassword });
     return createdUser.save();
   }
+
+  async findById(userId: string): Promise<UserDocument | null> {
+    return this.userModel.findById(userId).exec();
+  }
+
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
+
   async updateRefreshToken(
     userId: string,
     refreshToken: string,
