@@ -4,11 +4,13 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -44,7 +46,30 @@ export class AuthService {
       email: user.email,
       role: user.role,
     };
-    const token = this.jwtService.sign(payload);
-    return { access_token: token };
+
+    // access token
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      expiresIn: '15m',
+    });
+
+    // refresh token
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    // hash refresh token before saving
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    // save hashed refresh token in database
+    await this.usersService.updateRefreshToken(
+      user._id.toString(),
+      hashedRefreshToken,
+    );
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
   }
 }

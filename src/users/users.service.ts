@@ -14,4 +14,10 @@ export class UsersService {
   async findByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email }).exec();
   }
+  async updateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
+    await this.userModel.findByIdAndUpdate(userId, { refreshToken }).exec();
+  }
 }
