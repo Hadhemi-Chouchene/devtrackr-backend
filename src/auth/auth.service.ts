@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtPayload } from './types/jwt-payload.interface';
 @Injectable()
 export class AuthService {
   constructor(
@@ -71,5 +76,70 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
     };
+  }
+
+  async refreshUserSession(refreshToken: string) {
+    try {
+      // verify refresh token
+      const payload = this.jwtService.verify<JwtPayload>(refreshToken, {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      });
+
+      // find user by id from payload
+      const user = await this.usersService.findById(payload.userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // check if refresh token exists in database
+      if (!user.refreshToken) {
+        throw new UnauthorizedException('Refresh token not found');
+      }
+
+      // compare refresh token with hashed version in database
+      const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // generate new access token
+      const newAccessToken = this.jwtService.sign(
+        {
+          userId: user._id.toString(),
+          email: user.email,
+          role: user.role,
+        },
+        {
+          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+          expiresIn: '15m',
+        },
+      );
+
+      // refresh token rotation: generate new refresh token and update in database
+      const newRefreshToken = this.jwtService.sign(
+        {
+          userId: user._id,
+          email: user.email,
+          role: user.role,
+        },
+        {
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+          expiresIn: '7d',
+        },
+      );
+
+      const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+      await this.usersService.updateRefreshToken(
+        user._id.toString(),
+        hashedRefreshToken,
+      );
+      return {
+        access_token: newAccessToken,
+        refresh_token: newRefreshToken,
+      };
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 }
