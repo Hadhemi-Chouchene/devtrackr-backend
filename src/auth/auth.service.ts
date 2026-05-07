@@ -38,31 +38,22 @@ export class AuthService {
     // check if user exists
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
     // check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new BadRequestException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials');
     }
-    // Generate JWT
-    const payload = {
+
+    const payload: JwtPayload = {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
     };
 
-    // access token
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-      expiresIn: '15m',
-    });
-
-    // refresh token
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: '7d',
-    });
+    const accessToken = this.generateAccessToken(payload);
+    const refreshToken = this.generateRefreshToken(payload);
 
     // hash refresh token before saving
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -102,31 +93,14 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      // generate new access token
-      const newAccessToken = this.jwtService.sign(
-        {
-          userId: user._id.toString(),
-          email: user.email,
-          role: user.role,
-        },
-        {
-          secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
-        },
-      );
+      const newPayload: JwtPayload = {
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role,
+      };
 
-      // refresh token rotation: generate new refresh token and update in database
-      const newRefreshToken = this.jwtService.sign(
-        {
-          userId: user._id,
-          email: user.email,
-          role: user.role,
-        },
-        {
-          secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-          expiresIn: '7d',
-        },
-      );
+      const accessToken = this.generateAccessToken(newPayload);
+      const newRefreshToken = this.generateRefreshToken(newPayload);
 
       const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
@@ -135,7 +109,7 @@ export class AuthService {
         hashedRefreshToken,
       );
       return {
-        access_token: newAccessToken,
+        access_token: accessToken,
         refresh_token: newRefreshToken,
       };
     } catch {
@@ -147,5 +121,20 @@ export class AuthService {
     // Invalidate the refresh token by removing it from the database
     await this.usersService.updateRefreshToken(userId, '');
     return { message: 'Logged out successfully' };
+  }
+
+  // helper methods
+  private generateAccessToken(payload: JwtPayload) {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+      expiresIn: '15m',
+    });
+  }
+
+  private generateRefreshToken(payload: JwtPayload) {
+    return this.jwtService.sign(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
   }
 }
