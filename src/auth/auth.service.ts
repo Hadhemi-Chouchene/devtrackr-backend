@@ -142,4 +142,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
+
+  async logout(userId: string) {
+    // Invalidate the refresh token by removing it from the database
+    await this.usersService.updateRefreshToken(userId, '');
+    return { message: 'Logged out successfully' };
+  }
 }
