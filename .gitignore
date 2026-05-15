@@ -3,6 +3,10 @@
 /node_modules
 /build
 
+# configuration files
+.postman/
+postman/
+
 # Logs
 logs
 *.log
