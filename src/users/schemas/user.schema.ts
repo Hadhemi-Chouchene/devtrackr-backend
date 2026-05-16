@@ -22,5 +22,3 @@ export class User {
   refreshToken?: string;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
-
-UserSchema.index({ email: 1 }, { unique: true }); // unique index for email
