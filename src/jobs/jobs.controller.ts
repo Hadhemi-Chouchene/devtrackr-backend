@@ -1,4 +1,3 @@
-import { ApiTags } from '@nestjs/swagger';
 import {
   Controller,
   Get,
@@ -20,6 +19,7 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import type { AuthenticatedUser } from 'src/auth/types/authenticated-user.interface';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Jobs')
 @UseGuards(JwtAuthGuard) // Apply JWT guard globally to all routes
@@ -27,7 +27,8 @@ import type { AuthenticatedUser } from 'src/auth/types/authenticated-user.interf
 export class JobsController {
   constructor(private jobsService: JobsService) {}
 
-  // Users can create their own jobs
+  @ApiOperation({ summary: 'Create a new job' })
+  @ApiResponse({ status: 201 })
   @Post()
   async createJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -41,7 +42,8 @@ export class JobsController {
     };
   }
 
-  // Users get ONLY their own jobs
+  @ApiOperation({ summary: 'Get logged-in user jobs' })
+  @ApiResponse({ status: 200 })
   @Get()
   async getJobs(
     @CurrentUser() user: AuthenticatedUser,
@@ -55,7 +57,8 @@ export class JobsController {
     };
   }
 
-  // Users can update ONLY their own jobs (already protected in service)
+  @ApiOperation({ summary: 'Update a job by id' })
+  @ApiResponse({ status: 200 })
   @Put(':id')
   async editJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -74,7 +77,8 @@ export class JobsController {
     };
   }
 
-  // Users can delete ONLY their own jobs
+  @ApiOperation({ summary: 'Delete a job by id' })
+  @ApiResponse({ status: 200 })
   @Delete(':id')
   async deleteJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -87,10 +91,12 @@ export class JobsController {
     };
   }
 
-  // ADMIN-ONLY: Get ALL jobs (global access)
+  @ApiOperation({ summary: 'Get all jobs (admin only)' })
+  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Get('admin/all')
+  @Get('admin/jobs')
   async getAllJobsForAdmin(@Query() query: GetJobsQueryDto) {
     const jobs = await this.jobsService.findAll(query);
 
