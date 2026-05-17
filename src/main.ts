@@ -11,7 +11,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Global validation
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Global interceptors
   app.useGlobalInterceptors(
