@@ -41,6 +41,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('logout')

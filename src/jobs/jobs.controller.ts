@@ -35,6 +35,7 @@ export class JobsController {
 
   @ApiOperation({ summary: 'Create a new job' })
   @ApiResponse({ status: 201 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Post()
   async createJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -50,6 +51,7 @@ export class JobsController {
 
   @ApiOperation({ summary: 'Get logged-in user jobs' })
   @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Get()
   async getJobs(
     @CurrentUser() user: AuthenticatedUser,
@@ -65,6 +67,7 @@ export class JobsController {
 
   @ApiOperation({ summary: 'Update a job by id' })
   @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Put(':id')
   async editJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -85,6 +88,7 @@ export class JobsController {
 
   @ApiOperation({ summary: 'Delete a job by id' })
   @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @Delete(':id')
   async deleteJob(
     @CurrentUser() user: AuthenticatedUser,
@@ -99,6 +103,7 @@ export class JobsController {
 
   @ApiOperation({ summary: 'Get all jobs (admin only)' })
   @ApiResponse({ status: 200 })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
