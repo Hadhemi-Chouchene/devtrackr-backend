@@ -5,7 +5,12 @@ import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from './types/authenticated-user.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,6 +41,7 @@ export class AuthController {
 
   @ApiOperation({ summary: 'Logout user' })
   @ApiResponse({ status: 200 })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   logout(@CurrentUser() user: AuthenticatedUser) {

@@ -19,9 +19,15 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import type { AuthenticatedUser } from 'src/auth/types/authenticated-user.interface';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Jobs')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard) // Apply JWT guard globally to all routes
 @Controller('jobs')
 export class JobsController {
