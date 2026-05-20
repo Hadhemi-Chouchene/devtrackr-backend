@@ -8,6 +8,10 @@ import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 import { SortOrder } from './dto/get-jobs-query.dto';
 import { JobStatus } from './enums/job-status.enum';
 
+interface JobStats {
+  _id: JobStatus;
+  count: number;
+}
 @Injectable()
 export class JobsService {
   constructor(
@@ -155,5 +159,29 @@ export class JobsService {
       totalPages,
       jobs,
     };
+  }
+
+  async getStats(userId: string) {
+    const stats = await this.jobModel.aggregate<JobStats>([
+      {
+        $match: { userId },
+      },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    const result = {
+      applied: 0,
+      interview: 0,
+      rejected: 0,
+      accepted: 0,
+    };
+    stats.forEach((item) => {
+      result[item._id] = item.count;
+    });
+    return result;
   }
 }
