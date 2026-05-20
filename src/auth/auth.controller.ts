@@ -2,6 +2,7 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from './types/authenticated-user.interface';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -35,8 +36,8 @@ export class AuthController {
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   @Post('refresh')
-  refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshUserSession(refreshToken);
+  refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshUserSession(refreshTokenDto.refreshToken);
   }
 
   @ApiOperation({ summary: 'Logout user' })
