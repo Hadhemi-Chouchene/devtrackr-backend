@@ -116,4 +116,21 @@ export class JobsController {
       jobs,
     };
   }
+
+  // Analytics section
+
+  @ApiOperation({ summary: 'Get authenticated user job analytics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Jobs statistics fetched successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @Get('statistics')
+  async getJobsStats(@CurrentUser() user: AuthenticatedUser) {
+    const stats = await this.jobsService.getStats(user.userId);
+    return {
+      message: 'Jobs statistics fetched successfully',
+      stats,
+    };
+  }
 }
