@@ -7,11 +7,8 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 import { SortOrder } from './dto/get-jobs-query.dto';
 import { JobStatus } from './enums/job-status.enum';
+import { JobStats } from './types/job-stats.interface';
 
-interface JobStats {
-  _id: JobStatus;
-  count: number;
-}
 @Injectable()
 export class JobsService {
   constructor(
@@ -173,15 +170,21 @@ export class JobsService {
         },
       },
     ]);
-    const result = {
-      applied: 0,
-      interview: 0,
-      rejected: 0,
-      accepted: 0,
+    const result: Record<JobStatus, number> = {
+      [JobStatus.APPLIED]: 0,
+      [JobStatus.INTERVIEW]: 0,
+      [JobStatus.REJECTED]: 0,
+      [JobStatus.ACCEPTED]: 0,
     };
-    stats.forEach((item) => {
-      result[item._id] = item.count;
+
+    let total = 0;
+    stats.forEach((stat) => {
+      result[stat._id] = stat.count;
+      total += stat.count;
     });
-    return result;
+    return {
+      result,
+      total,
+    };
   }
 }
