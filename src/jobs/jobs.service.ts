@@ -8,7 +8,7 @@ import { GetJobsQueryDto } from './dto/get-jobs-query.dto';
 import { SortOrder } from './dto/get-jobs-query.dto';
 import { JobStatus } from './enums/job-status.enum';
 import { JobStats } from './types/job-stats.interface';
-
+import dayjs from 'dayjs';
 @Injectable()
 export class JobsService {
   constructor(
@@ -186,5 +186,50 @@ export class JobsService {
       result,
       total,
     };
+  }
+
+  async getMonthlyApplications(userId: string) {
+    const monthlyApplications = await this.jobModel.aggregate<{
+      _id: { year: number; month: number };
+      count: number;
+    }>([
+      {
+        $match: {
+          userId,
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          '_id.year': -1,
+          '_id.month': -1,
+        },
+      },
+      {
+        $limit: 6,
+      },
+    ]);
+
+    return monthlyApplications
+      .map((item) => {
+        const date = dayjs()
+          .month(item._id.month - 1)
+          .year(item._id.year)
+          .format('MMM YYYY');
+
+        return {
+          month: date,
+          count: item.count,
+        };
+      })
+      .reverse();
   }
 }
