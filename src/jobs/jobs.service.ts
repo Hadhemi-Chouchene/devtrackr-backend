@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Job, JobDocument } from './schemas/job.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -161,7 +161,7 @@ export class JobsService {
   async getStats(userId: string) {
     const stats = await this.jobModel.aggregate<JobStats>([
       {
-        $match: { userId },
+        $match: { userId: new Types.ObjectId(userId) },
       },
       {
         $group: {
@@ -183,8 +183,8 @@ export class JobsService {
       total += stat.count;
     });
     return {
-      result,
       total,
+      statuses: result,
     };
   }
 
@@ -194,9 +194,7 @@ export class JobsService {
       count: number;
     }>([
       {
-        $match: {
-          userId,
-        },
+        $match: { userId: new Types.ObjectId(userId) },
       },
       {
         $group: {

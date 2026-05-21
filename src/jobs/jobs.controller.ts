@@ -130,7 +130,7 @@ export class JobsController {
     const stats = await this.jobsService.getStats(user.userId);
     return {
       message: 'Jobs statistics fetched successfully',
-      stats,
+      data: stats,
     };
   }
 
