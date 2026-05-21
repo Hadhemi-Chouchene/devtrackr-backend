@@ -133,4 +133,30 @@ export class JobsController {
       stats,
     };
   }
+
+  @ApiOperation({ summary: 'Get monthly application counts' })
+  @ApiResponse({
+    status: 200,
+    description: 'Monthly application counts fetched successfully',
+    schema: {
+      example: {
+        data: [
+          { month: '2026-01', count: 5 },
+          { month: '2026-02', count: 12 },
+        ],
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @Get('monthly-applications')
+  async getMonthlyApplications(@CurrentUser() user: AuthenticatedUser) {
+    const monthlyData = await this.jobsService.getMonthlyApplications(
+      user.userId,
+    );
+
+    return {
+      message: 'Monthly application counts fetched successfully',
+      data: monthlyData,
+    };
+  }
 }
