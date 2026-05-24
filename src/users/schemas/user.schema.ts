@@ -12,13 +12,29 @@ export class User {
     default: Role.USER,
   })
   role!: Role;
-  @Prop({ required: true, unique: true })
+
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
+  })
   email!: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   password!: string;
 
-  @Prop()
-  refreshToken?: string;
+  @Prop({ type: String, default: null, trim: true })
+  fullName?: string;
+
+  @Prop({ type: String, default: null })
+  avatarUrl?: string | null;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  refreshToken?: string | null;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
