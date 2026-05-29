@@ -32,7 +32,7 @@ export class JobsService {
       status: status || JobStatus.APPLIED,
 
       // Link job to the user who created it (from JWT)
-      userId,
+      userId: new Types.ObjectId(userId),
     });
 
     // Save job to MongoDB and return the saved document
@@ -53,7 +53,9 @@ export class JobsService {
     const skip = (pageNumber - 1) * limitNumber;
 
     // Build a query filter to find jobs that belong to the authenticated user
-    const filter: FilterQuery<JobDocument> = { userId };
+    const filter: FilterQuery<JobDocument> = {
+      userId: new Types.ObjectId(userId),
+    };
 
     // If a status filter is provided, add it to the query filter
     if (status) {
@@ -103,7 +105,7 @@ export class JobsService {
   async editJob(jobId: string, updateData: UpdateJobDto, userId: string) {
     // Find the job by ID and ensure it belongs to the authenticated user
     const job = await this.jobModel.findOneAndUpdate(
-      { _id: jobId, userId },
+      { _id: jobId, userId: new Types.ObjectId(userId) },
       updateData,
       { new: true },
     );
@@ -119,7 +121,7 @@ export class JobsService {
   async deleteJob(jobId: string, userId: string) {
     const job = await this.jobModel.findOneAndDelete({
       _id: jobId,
-      userId,
+      userId: new Types.ObjectId(userId),
     });
 
     // Prevent deleting jobs that don't belong to user
@@ -215,7 +217,7 @@ export class JobsService {
         $limit: 6,
       },
     ]);
-
+    console.log('monthlyApplications: ', monthlyApplications);
     return monthlyApplications
       .map((item) => {
         const date = dayjs()
